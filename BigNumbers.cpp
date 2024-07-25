@@ -366,19 +366,57 @@ public:
     }
 
     BigNumber operator*(BigNumber &n){
-        BigNumber a=BigNumber::abs(*this);
-        BigNumber b=BigNumber::abs(n);
-        BigNumber min=BigNumber::min(a,b);
-        BigNumber max=BigNumber::max(a,b);
-        BigNumber temp=BigNumber("0");
-        for(BigNumber i=BigNumber("0");i<min;i++){
-            temp+=max;
-        }
+        BigNumber multiplicand=BigNumber::abs(this->number.size()>n.number.size()?*this:n);
+        BigNumber multiplier=BigNumber::abs(multiplicand==*this?n:*this);
+        unsigned int multiplier_size=multiplier.number.size();
+        unsigned int multiplicand_size=multiplicand.number.size();
+        vector<BigNumber> array;
 
-        if(this->negative!=n.negative){
-            temp.negative=true;
+        int num1=0,num2=0,carry=0,product=0;
+        BigNumber temp;
+        temp.number.resize(multiplicand_size+1,'0');
+
+        for(int i=0;i<multiplier_size;i++){
+            num1= ctoi(multiplier.number.at(multiplier_size-1-i));
+            for(int j=0;j<multiplicand_size;j++){
+                num2=ctoi(multiplicand.number.at(multiplicand_size-1-j));
+                product=(num1*num2)+carry;
+                carry=product/10;
+                temp.number.at(multiplicand_size-j)=itoc(product%10);
+            }
+            if(carry){
+                temp.number.at(0)=itoc(carry);
+            }
+            else{
+                temp.number.at(0)='0';
+            }
+            carry=0;
+            array.push_back(temp);
         }
-        return temp;
+        BigNumber result;
+        unsigned int result_size=multiplicand_size+multiplier_size;
+        result.number.resize(result_size,'0');
+        int j=0;
+        temp.number.clear();
+        temp="0";
+        temp=array.at(0);
+        for(int i=0;i<array.size()-1;i++){
+            result.number.at(result_size-i-1)=temp.number.at(temp.number.size()-1);
+            temp.number.erase(temp.number.end());
+            temp=temp+array.at(i+1);
+            j++;
+        }
+            int k=0;
+            for(int i=result_size-j-1;i>=0;i--){
+                result.number.at(i)=temp.number.at(multiplicand_size-k);
+                k++;
+            }
+
+
+        while(result.number.size()>1 && result.number.at(0)=='0'){
+            result.number.erase(result.number.begin());
+        }
+        return result;
     }
 
     static BigNumber abs(BigNumber &n){
@@ -416,9 +454,12 @@ istream& operator>>(istream& din, BigNumber& n) {
 }
 
 int main() {
-    BigNumber n1("-7"), n2("8977");
-    cout<<"Enter number :";
+    BigNumber n1("2385"), n2("333");
+    cout<<"Enter a number: ";
     cin>>n1;
-    cout<<n1*n2<<endl;
+    cout<<"\nEnter a number: ";
+    cin>>n2;
+    
+    cout<<endl<<"Result is :"<<n1*n2;
     return 0;
 }
