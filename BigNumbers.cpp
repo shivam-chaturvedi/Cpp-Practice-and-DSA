@@ -30,7 +30,13 @@ class BigNumber {
         }
     }
 
-     void input() {
+    void trimExtraZeros(){
+        while(this->number.size()>1 && this->number.at(0)=='0'){
+           this->number.erase(this->number.begin());
+        }
+    }
+
+     void input() noexcept{
         number.clear();
         negative = false;
         int i = 0;
@@ -59,6 +65,7 @@ class BigNumber {
             }
             i++;
         } while (ch != 13);  // Enter key
+        trimExtraZeros();
     }
 
     int ctoi(char ch) const {
@@ -100,10 +107,10 @@ public:
                 throw std::runtime_error("BigNumber: number is not valid");
             }
         }
-
+        trimExtraZeros();
     }
 
-    void operator=(const string &number) {
+    void operator=(const string &number){
         this->number.clear();
         this->negative=false;
         int k=0;
@@ -120,18 +127,18 @@ public:
             else{
                 throw std::runtime_error("BigNumber: number is not valid");
             }
-
         }
+        trimExtraZeros();
     }
 
-    bool operator==(BigNumber &num){
+    bool operator==(BigNumber &num) noexcept{
         if(this->negative == num.negative){
             return this->number==num.number;
         }
         return false;
     }
 
-    bool operator>=(const BigNumber& num) const {
+    bool operator>=(const BigNumber& num) const noexcept {
         if(this->negative!=num.negative){
             return !this->negative;
         }
@@ -161,7 +168,7 @@ public:
         return true;
     }
 
-    bool operator>(BigNumber& num){
+    bool operator>(BigNumber& num) noexcept{
       if(this->negative!=num.negative){
             return !this->negative;
         }
@@ -191,7 +198,7 @@ public:
         return false;
     }
 
-    bool operator<(BigNumber &n){
+    bool operator<(BigNumber &n) noexcept{
         if(*this==n){
             return false;
         }
@@ -199,20 +206,20 @@ public:
     }
 
     
-    bool operator<=(BigNumber &n){
+    bool operator<=(BigNumber &n) noexcept{
         if(*this==n){
             return true;
         }
         return *this>n?false:true;
     }
 
-    BigNumber operator--(){
+    BigNumber operator--() noexcept{
         BigNumber one=BigNumber("1");
         *this=*this-one;
         return *this;
     }
     
-    BigNumber operator--(int){
+    BigNumber operator--(int) noexcept{
         BigNumber one=BigNumber("1");
         BigNumber temp;
         temp=*this;
@@ -221,14 +228,14 @@ public:
     }
 
     
-    BigNumber operator++(){
+    BigNumber operator++() noexcept{
         BigNumber one=BigNumber("1");
         *this=*this+one;
         return *this;
     }
 
     
-    BigNumber operator++(int){
+    BigNumber operator++(int) noexcept{
         BigNumber one=BigNumber("1");
         BigNumber temp;
         temp=*this;
@@ -236,7 +243,7 @@ public:
         return temp;
     }
 
-    BigNumber operator+(BigNumber& num) {
+    BigNumber operator+(BigNumber& num) noexcept {
         if(this->negative!=num.negative){
             // if both numbers are of different signs
             BigNumber temp;
@@ -281,7 +288,7 @@ public:
         return result;
     }
 
-    BigNumber operator-(BigNumber& num){
+    BigNumber operator-(BigNumber& num) noexcept{
         
         if(this->negative!=num.negative){
             BigNumber temp;
@@ -350,7 +357,7 @@ public:
         return result;
     }
 
-    BigNumber operator+=(BigNumber &n){
+    BigNumber operator+=(BigNumber &n) noexcept{
         BigNumber temp;
         temp=n+*this;
         *this=temp;
@@ -358,16 +365,20 @@ public:
     }
 
     
-    BigNumber operator-=(BigNumber &n){
+    BigNumber operator-=(BigNumber &n) noexcept{
         BigNumber temp;
         temp=*this-n;
         *this=temp;
         return temp;
     }
 
-    BigNumber operator*(BigNumber &n){
+    BigNumber operator*(BigNumber &n) noexcept{
+        try{
+
         BigNumber multiplicand=BigNumber::abs(this->number.size()>n.number.size()?*this:n);
-        BigNumber multiplier=BigNumber::abs(multiplicand==*this?n:*this);
+        BigNumber a=BigNumber::abs(*this); //this is done so two number multiplier and multiplicant is always positive
+        BigNumber multiplier=BigNumber::abs(multiplicand==a?n:*this);
+
         unsigned int multiplier_size=multiplier.number.size();
         unsigned int multiplicand_size=multiplicand.number.size();
         vector<BigNumber> array;
@@ -400,6 +411,7 @@ public:
         temp.number.clear();
         temp="0";
         temp=array.at(0);
+        // creating result and temp number vectors
         for(int i=0;i<array.size()-1;i++){
             result.number.at(result_size-i-1)=temp.number.at(temp.number.size()-1);
             temp.number.erase(temp.number.end());
@@ -407,6 +419,7 @@ public:
             j++;
         }
             int k=0;
+            // here we merge temp and result vectors
             for(int i=result_size-j-1;i>=0;i--){
                 result.number.at(i)=temp.number.at(multiplicand_size-k);
                 k++;
@@ -416,10 +429,17 @@ public:
         while(result.number.size()>1 && result.number.at(0)=='0'){
             result.number.erase(result.number.begin());
         }
+        if(this->negative!=n.negative){
+            result.negative=true;
+        }
         return result;
+        }
+        catch(...){
+            return BigNumber("0");
+        }
     }
 
-    static BigNumber abs(BigNumber &n){
+    static BigNumber abs(BigNumber &n) noexcept{
         if(n.negative){
         BigNumber temp;
         n.negative=false;
@@ -430,11 +450,11 @@ public:
         return n;
     }
 
-    static BigNumber max(BigNumber& n1, BigNumber& n2) {
+    static BigNumber max(BigNumber& n1, BigNumber& n2) noexcept {
         return n1>n2? n1 : n2;
     }
 
-    static BigNumber min(BigNumber &n1,BigNumber &n2){
+    static BigNumber min(BigNumber &n1,BigNumber &n2) noexcept{
         return n1>n2?n2:n1;
     }
 
@@ -454,12 +474,10 @@ istream& operator>>(istream& din, BigNumber& n) {
 }
 
 int main() {
-    BigNumber n1("2385"), n2("333");
+    BigNumber n1,n2;
     cout<<"Enter a number: ";
     cin>>n1;
-    cout<<"\nEnter a number: ";
-    cin>>n2;
     
-    cout<<endl<<"Result is :"<<n1*n2;
+    cout<<endl<<"Result is: "<<n1;
     return 0;
 }
