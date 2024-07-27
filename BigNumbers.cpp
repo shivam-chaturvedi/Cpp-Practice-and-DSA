@@ -138,6 +138,59 @@ public:
         return false;
     }
 
+
+    BigNumber divideOnce(BigNumber &n){
+        BigNumber dividend=BigNumber::abs(*this);
+        BigNumber divisor=BigNumber::abs(n);
+
+        unsigned int divisor_size=divisor.number.size();
+        unsigned int dividend_size=dividend.number.size();
+        
+
+        if(dividend<divisor){
+            return BigNumber("0");
+        }
+        else if(dividend==divisor){
+            return BigNumber("1");
+        }
+        else{
+            BigNumber temp;
+            BigNumber inc("1");
+            int j=0;
+            vector<char>::iterator it=dividend.number.begin();
+            for(int i=0;i<divisor_size;i++){
+                temp.number.push_back(*(it+i));
+            }
+            if(temp<divisor){
+                temp.number.push_back(*(it+divisor_size));
+            }
+            j=temp.number.size()-1;
+            inc="1";
+            while(temp>=(divisor*inc)){
+                inc++;
+            }
+            inc--;
+            BigNumber product=(divisor*inc);
+            temp=temp-product;
+            int k=1;
+            for(int i=j;i>=0;i--){
+                if(temp.number.size()>=k){
+                dividend.number.at(i)=*(temp.number.end()-k++);
+                }
+                else{
+                    dividend.number.at(i)='0';;
+                }
+            }
+            dividend.trimExtraZeros();
+            cout<<dividend.divideOnce(divisor)<<" ";
+         
+            return inc;
+        }
+
+        return BigNumber("0");
+        
+    }
+    
     bool operator>=(const BigNumber& num) const noexcept {
         if(this->negative!=num.negative){
             return !this->negative;
@@ -474,10 +527,18 @@ istream& operator>>(istream& din, BigNumber& n) {
 }
 
 int main() {
-    BigNumber n1,n2;
+    BigNumber n1("3860"),n2("32");
     cout<<"Enter a number: ";
     cin>>n1;
+     cout<<"\nEnter a number: ";
+    cin>>n2;
     
-    cout<<endl<<"Result is: "<<n1;
+    cout<<endl<<"Result is: ";
+    n1.divideOnce(n2);
+
+    
+    
+
+
     return 0;
 }
